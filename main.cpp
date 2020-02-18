@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
         return 0;
     }
     else if(argc == 2){
-    	if(strcmp(argv[1], "-h") == 0){
+    	if(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0){
             help_ansi();
             return 0;
     	}
@@ -141,25 +141,27 @@ void help(){
 
     std::cout << "INPUT OPTIONS:\n";
     std::cout << "Specify where the program will take the input.\n";
-    std::cout << "    -s : take the string (cannot contain spaces) that follow as input.\n";
+    std::cout << "    -s : take the string that follow as input.\n";
     std::cout << "    -f : take the contents of the specified file as input.\n";
     std::cout << "         The file may contain spaces and new lines.\n\n";
 
     std::cout << "INPUT SPECIFICATION:\n";
-    std::cout << "A string without spaces if the previous option is -s.\n";
+    std::cout << "A string without spaces, or between \"\", if the previous option is -s.\n";
     std::cout << "It can also be left blank after -s, the program will process the empty string.\n";
     std::cout << "A valid filename or path to a file which contain the input if the previous option is -f.\n\n";
 
     std::cout << "HELP:\n";
-    std::cout << "    ./sha     --> view the help page in plain text.\n";
-    std::cout << "    ./sha -h  --> view the help page using ANSI codes.\n\n";
+    std::cout << "    ./sha        --> view the help page in plain text.\n";
+    std::cout << "    ./sha -h     --> view the help page using ANSI codes.\n";
+    std::cout << "          --help\n\n";
 
     std::cout << "EXAMPLES:\n";
     std::cout << "    ./sha\n";
     std::cout << "    ./sha -h\n";
+    std::cout << "    ./sha --help\n";
     std::cout << "    ./sha -1 -s\n";
     std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 -s 123456789\n";
+    std::cout << "    ./sha -256 -s \"example with spaces\"\n";
     std::cout << "    ./sha -384 -f file_name_1.txt\n";
     std::cout << "    ./sha -512 -f /folder/file_name_2.txt\n\n";
 
@@ -185,25 +187,27 @@ void help_ansi(){
 
     std::cout << "\e[4mINPUT OPTIONS\e[0m\n";
     std::cout << "Specify where the program will take the input.\n";
-    std::cout << "    -s : take the string \e[1m(cannot contain spaces)\e[0m that follow as input.\n";
+    std::cout << "    -s : take the string that follow as input.\n";
     std::cout << "    -f : take the contents of the specified file as input.\n";
     std::cout << "         The file may contain spaces and new lines.\n\n";
 
     std::cout << "\e[4mINPUT SPECIFICATION\e[0m\n";
-    std::cout << "A string without spaces if the previous option is -s.\n";
+    std::cout << "A string without spaces, or between \"\", if the previous option is -s.\n";
     std::cout << "It can also be left blank after -s, the program will process the empty string.\n";
     std::cout << "A valid filename or path to a file which contain the input if the previous option is -f.\n\n";
 
     std::cout << "\e[4mHELP:\e[0m\n";
-    std::cout << "    ./sha     --> view the help page in plain text.\n";
-    std::cout << "    ./sha -h  --> view the help page using ANSI codes.\n\n";
+    std::cout << "    ./sha        --> view the help page in plain text.\n";
+    std::cout << "    ./sha -h     --> view the help page using ANSI codes.\n";
+    std::cout << "          --help\n\n";
 
     std::cout << "\e[4mEXAMPLES\e[0m\n";
     std::cout << "    ./sha\n";
     std::cout << "    ./sha -h\n";
+    std::cout << "    ./sha --help\n";
     std::cout << "    ./sha -1 -s\n";
     std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 -s 123456789\n";
+    std::cout << "    ./sha -256 -s \"example with spaces\"\n";
     std::cout << "    ./sha -384 -f file_name_1.txt\n";
     std::cout << "    ./sha -512 -f /folder/file_name_2.txt\n\n";
 
