@@ -8,20 +8,6 @@
 static const size_t BLOCK_INTS = 16;  /* number of 32bit integers per SHA1 block */
 static const size_t BLOCK_BYTES = BLOCK_INTS * 4;
 
-static void reset(uint32_t digest[], std::string &buffer, uint64_t &transforms)
-{
-    /* SHA1 initialization constants */
-    digest[0] = 0x67452301;
-    digest[1] = 0xefcdab89;
-    digest[2] = 0x98badcfe;
-    digest[3] = 0x10325476;
-    digest[4] = 0xc3d2e1f0;
-
-    /* Reset counters */
-    buffer = "";
-    transforms = 0;
-}
-
 static uint32_t rol(const uint32_t value, const size_t bits)
 {
     return (value << bits) | (value >> (32 - bits));
@@ -32,9 +18,7 @@ static uint32_t blk(const uint32_t block[BLOCK_INTS], const size_t i)
     return rol(block[(i+13)&15] ^ block[(i+8)&15] ^ block[(i+2)&15] ^ block[i], 1);
 }
 
-/*
- * (R0+R1), R2, R3, R4 are the different operations used in SHA1
- */
+/* (R0+R1), R2, R3, R4 are the different operations used in SHA1 */
 static void R0(const uint32_t block[BLOCK_INTS], const uint32_t v, uint32_t &w, const uint32_t x, const uint32_t y, uint32_t &z, const size_t i)
 {
     z += ((w&(x^y))^y) + block[i] + 0x5a827999 + rol(v, 5);
@@ -188,13 +172,23 @@ static void buffer_to_block(const std::string &buffer, uint32_t block[BLOCK_INTS
 }
 
 
-SHA1::SHA1()
-{
-    reset(digest, buffer, transforms);
-}
+std::string sha_1(const std::string &s){
+    /* Variables declaration */
+    uint32_t digest[5];
+    std::string buffer;
+    uint64_t transforms;
 
-void SHA1::update(const std::string &s)
-{
+    /* SHA1 initialization constants */
+    digest[0] = 0x67452301;
+    digest[1] = 0xefcdab89;
+    digest[2] = 0x98badcfe;
+    digest[3] = 0x10325476;
+    digest[4] = 0xc3d2e1f0;
+
+    /* Reset counters */
+    buffer = "";
+    transforms = 0;
+
     std::istringstream is(s);
 
     while(true)
@@ -202,19 +196,13 @@ void SHA1::update(const std::string &s)
         char sbuf[BLOCK_BYTES];
         is.read(sbuf, BLOCK_BYTES - buffer.size());
         buffer.append(sbuf, (std::size_t)is.gcount());
-        if(buffer.size() != BLOCK_BYTES){ return; }
+        if(buffer.size() != BLOCK_BYTES){ break; }
         uint32_t block[BLOCK_INTS];
         buffer_to_block(buffer, block);
         transform(digest, block, transforms);
         buffer.clear();
     }
-}
 
-/*
- * Add padding and return the message digest.
- */
-std::string SHA1::final()
-{
     /* Total number of hashed bits */
     uint64_t total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
 
@@ -250,9 +238,6 @@ std::string SHA1::final()
         result << std::hex << std::setfill('0') << std::setw(8);
         result << digest[i];
     }
-
-    /* Reset for next run */
-    reset(digest, buffer, transforms);
 
     return result.str();
 }

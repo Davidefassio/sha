@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
     int sha_n;
     std::string input, output;
 
-    std::cout << "Hash fucntions: SHA by Davide Fassio" << std::endl << std::endl;
+    std::cout << "Hash cfucntions: SHA by Davide Fassio" << std::endl << std::endl;
 
     if(argc == 1){
         help();
@@ -81,9 +81,7 @@ int main(int argc, char* argv[]){
     // Switch the sha algs
     switch(sha_n){
         case 1:{
-            SHA1 sha1;
-            sha1.update(input);
-            output = sha1.final();
+            output = sha_1(input);
             break;
         }
 
