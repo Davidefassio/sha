@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
     int sha_n;
     std::string input, output;
 
-    std::cout << "Hash cfucntions: SHA by Davide Fassio" << std::endl << std::endl;
+    std::cout << "Hash fucntions: SHA by Davide Fassio" << std::endl << std::endl;
 
     if(argc == 1){
         help();
@@ -38,11 +38,11 @@ int main(int argc, char* argv[]){
         if(argv[1][0] == '-'){
             sscanf(argv[1], "-%d", &sha_n);
 
-            if(strcmp(argv[2], "-s") == 0){
+            if(strcmp(argv[2], "-s") == 0 || strcmp(argv[2], "--string") == 0){
                 flag = true;
                 input.append(argv[3]);
             }
-            else if(strcmp(argv[2], "-f") == 0){
+            else if(strcmp(argv[2], "-f") == 0 || strcmp(argv[2], "--file") == 0){
                 flag = true;
 
                 std::ifstream in(argv[3], std::ios::in);
@@ -129,7 +129,7 @@ void help(){
     std::cout << "    sha - secure hash algorithm.\n\n";
 
     std::cout << "SYNOPSIS:\n";
-    std::cout << "    ./sha [sha number] [Input options] {Input specification}\n\n";
+    std::cout << "    ./sha {sha number} {Input options} [Input specification]\n\n";
 
     std::cout << "SHA NUMBER:\n";
     std::cout << "Identify the algorithm that will process the input.\n";
@@ -141,9 +141,11 @@ void help(){
 
     std::cout << "INPUT OPTIONS:\n";
     std::cout << "Specify where the program will take the input.\n";
-    std::cout << "    -s : take the string that follow as input.\n";
-    std::cout << "    -f : take the contents of the specified file as input.\n";
-    std::cout << "         The file may contain spaces and new lines.\n\n";
+    std::cout << "    -s, --string\n";
+    std::cout << "        take the string that follows as input.\n\n";
+    std::cout << "    -f, --file\n";
+    std::cout << "        take the contents of the specified file as input.\n";
+    std::cout << "        The file may contain spaces and new lines.\n\n";
 
     std::cout << "INPUT SPECIFICATION:\n";
     std::cout << "A string without spaces, or between \"\", if the previous option is -s.\n";
@@ -161,9 +163,9 @@ void help(){
     std::cout << "    ./sha --help\n";
     std::cout << "    ./sha -1 -s\n";
     std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 -s \"example with spaces\"\n";
+    std::cout << "    ./sha -256 --string \"example with spaces\"\n";
     std::cout << "    ./sha -384 -f file_name_1.txt\n";
-    std::cout << "    ./sha -512 -f /folder/file_name_2.txt\n\n";
+    std::cout << "    ./sha -512 --file /folder/file_name_2.txt\n\n";
 
     std::cout << "COPYRIGHT:\n";
     std::cout << "    Copyright © 2020 Davide Fassio. MIT license.\n\n";
@@ -175,21 +177,23 @@ void help_ansi(){
     std::cout << "    sha - secure hash algorithm.\n\n";
 
     std::cout << "\e[4mSYNOPSIS\e[0m\n";
-    std::cout << "    ./sha [\e[4msha number\e[0m] [\e[4mInput options\e[0m] {\e[4mInput specification\e[0m}\n\n";
+    std::cout << "    ./sha {\e[4msha number\e[0m} {\e[4mInput options\e[0m} [\e[4mInput specification\e[0m]\n\n";
 
     std::cout << "\e[4mSHA NUMBER\e[0m\n";
     std::cout << "Identify the algorithm that will process the input.\n";
-    std::cout << "    -1   : use sha-1 algorithm, output's length = 160 bit;\n";
-    std::cout << "    -224 : (sha-2 family) use sha-224 algorithm;\n";
-    std::cout << "    -256 : (sha-2 family) use sha-256 algorithm;\n";
-    std::cout << "    -384 : (sha-2 family) use sha-384 algorithm;\n";
-    std::cout << "    -512 : (sha-2 family) use sha-512 algorithm.\n\n";
+    std::cout << "    \e[1m-1\e[0m   : use sha-1 algorithm, output's length = 160 bit;\n";
+    std::cout << "    \e[1m-224\e[0m : (sha-2 family) use sha-224 algorithm;\n";
+    std::cout << "    \e[1m-256\e[0m : (sha-2 family) use sha-256 algorithm;\n";
+    std::cout << "    \e[1m-384\e[0m : (sha-2 family) use sha-384 algorithm;\n";
+    std::cout << "    \e[1m-512\e[0m : (sha-2 family) use sha-512 algorithm.\n\n";
 
     std::cout << "\e[4mINPUT OPTIONS\e[0m\n";
     std::cout << "Specify where the program will take the input.\n";
-    std::cout << "    -s : take the string that follow as input.\n";
-    std::cout << "    -f : take the contents of the specified file as input.\n";
-    std::cout << "         The file may contain spaces and new lines.\n\n";
+    std::cout << "    \e[1m-s, --string\e[0m\n";
+    std::cout << "        take the string that follows as input.\n\n";
+    std::cout << "    \e[1m-f, --file\e[0m\n";
+    std::cout << "        take the contents of the specified file as input.\n";
+    std::cout << "        The file may contain spaces and new lines.\n\n";
 
     std::cout << "\e[4mINPUT SPECIFICATION\e[0m\n";
     std::cout << "A string without spaces, or between \"\", if the previous option is -s.\n";
@@ -207,9 +211,9 @@ void help_ansi(){
     std::cout << "    ./sha --help\n";
     std::cout << "    ./sha -1 -s\n";
     std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 -s \"example with spaces\"\n";
+    std::cout << "    ./sha -256 --string \"example with spaces\"\n";
     std::cout << "    ./sha -384 -f file_name_1.txt\n";
-    std::cout << "    ./sha -512 -f /folder/file_name_2.txt\n\n";
+    std::cout << "    ./sha -512 --file /folder/file_name_2.txt\n\n";
 
     std::cout << "\e[4mCOPYRIGHT\e[0m\n";
     std::cout << "    Copyright © 2020 Davide Fassio. MIT license.\n\n";
