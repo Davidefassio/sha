@@ -147,11 +147,11 @@ std::string sha_1(std::ifstream &in){
         char sbuf[64];
         in.read(sbuf, 64);
 
-        size_t cnt;
+        size_t cnt = in.gcount();
         for(size_t i = 0; i < in.gcount(); i++){
             if(sbuf[i] == 10 && i == in.gcount() - 1){
                 sbuf[i] = (char) 0;
-                cnt = i;
+                cnt--;
             }
             else if(sbuf[i] == 10){
                 sbuf[i] = (char) 32;
