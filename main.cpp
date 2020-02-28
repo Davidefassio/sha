@@ -11,8 +11,9 @@ void help_ansi();
 
 int main(int argc, char* argv[]){
     bool flag = false;
-    int sha_n;
+    int sha_n, mode;
     std::string input, output;
+    std::ifstream input_file;
 
     std::cout << "Hash fucntions: SHA by Davide Fassio" << std::endl << std::endl;
 
@@ -26,48 +27,37 @@ int main(int argc, char* argv[]){
             return 0;
     	}
     }
-    else if(argc == 3){
-        if(argv[1][0] == '-' && argv[2][0] == '-'){
-            if(strcmp(argv[2], "-s") == 0){
-                flag = true;
-                sscanf(argv[1], "-%d", &sha_n);
-            }
-        }
-    }
     else if(argc == 4){
         if(argv[1][0] == '-'){
             sscanf(argv[1], "-%d", &sha_n);
 
-            if(strcmp(argv[2], "-s") == 0 || strcmp(argv[2], "--string") == 0){
-                flag = true;
-                input.append(argv[3]);
+            if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0 || strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0 || strcmp(argv[2], "-b") == 0 || strcmp(argv[2], "--binary") == 0){
+                if(strcmp(argv[3], "-s") == 0 || strcmp(argv[3], "--string") == 0){
+                    flag = true;
+                }
             }
-            else if(strcmp(argv[2], "-f") == 0 || strcmp(argv[2], "--file") == 0){
-                flag = true;
+        }
+    }
+    else if(argc == 5){
+        if(argv[1][0] == '-'){
+            sscanf(argv[1], "-%d", &sha_n);
 
-                std::ifstream in(argv[3], std::ios::in);
-                if(!in.good()){
-                    std::cout << "sha: An error occurred while opening the file" << std::endl;
-                    return 0;
+            if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0 || strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0 || strcmp(argv[2], "-b") == 0 || strcmp(argv[2], "--binary") == 0){
+                if(strcmp(argv[3], "-s") == 0 || strcmp(argv[3], "--string") == 0){
+                    flag = true;
+                    mode = 0;
+                    input.append(argv[4]);
                 }
-
-                std::string line;
-                int cnt = 0;
-                while(!in.eof()){
-                    in >> line;
-
-                    if(line.length() > 0 && cnt > 0){
-                        input.append(" ");
-                        input.append(line);
-                    }
-                    else if(cnt == 0){
-                        input.append(line);
+                else if(strcmp(argv[3], "-f") == 0 || strcmp(argv[3], "--file") == 0){
+                    input_file.open(argv[4], std::ios::in);
+                    if(!input_file.good()){
+                        std::cout << "sha: An error occurred while opening the file" << std::endl;
+                        return 0;
                     }
 
-                    line.clear();
-                    cnt++;
+                    flag = true;
+                    mode = 1;
                 }
-                in.close();
             }
         }
     }
@@ -78,10 +68,15 @@ int main(int argc, char* argv[]){
         return 0;
     }
 
-    // Switch the sha algs
+    // Switch the sha algorithms
     switch(sha_n){
         case 1:{
-            output = sha_1(input);
+            if(mode == 0){
+                output = sha_1(input);
+            }
+            else if(mode == 1){
+                output = sha_1(input_file);
+            }
             break;
         }
 
@@ -107,7 +102,7 @@ int main(int argc, char* argv[]){
             char output_512[513];
             sha_512(input, output_512);
             break;
-        } */
+        }*/
 
         default:{
             std::cout << "sha: sha-" << sha_n << " doesn't exist" << std::endl;
@@ -129,7 +124,7 @@ void help(){
     std::cout << "    sha - secure hash algorithm.\n\n";
 
     std::cout << "SYNOPSIS:\n";
-    std::cout << "    ./sha {sha number} {Input options} [Input specification]\n\n";
+    std::cout << "    ./sha {sha number} {Input format} {Input options} [Input specification]\n\n";
 
     std::cout << "SHA NUMBER:\n";
     std::cout << "Identify the algorithm that will process the input.\n";
@@ -138,6 +133,16 @@ void help(){
     std::cout << "    -256 : (sha-2 family) use sha-256 algorithm;\n";
     std::cout << "    -384 : (sha-2 family) use sha-384 algorithm;\n";
     std::cout << "    -512 : (sha-2 family) use sha-512 algorithm.\n\n";
+
+    std::cout << "INPUT FORMAT:\n";
+    std::cout << "Specify the format of the input data.\n";
+    std::cout << "    -a, --ascii\n";
+    std::cout << "        the input character will be converted in ASCII code\n";
+    std::cout << "        and the resulting bits will be processed.\n\n";
+    std::cout << "    -e, --hex\n";
+    std::cout << "        the input is a number written in hexadecimal.\n\n";
+    std::cout << "    -b, --binary\n";
+    std::cout << "        the input is a number written in binary.\n\n";
 
     std::cout << "INPUT OPTIONS:\n";
     std::cout << "Specify where the program will take the input.\n";
@@ -161,11 +166,11 @@ void help(){
     std::cout << "    ./sha\n";
     std::cout << "    ./sha -h\n";
     std::cout << "    ./sha --help\n";
-    std::cout << "    ./sha -1 -s\n";
-    std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 --string \"example with spaces\"\n";
-    std::cout << "    ./sha -384 -f file_name_1.txt\n";
-    std::cout << "    ./sha -512 --file /folder/file_name_2.txt\n\n";
+    std::cout << "    ./sha -1 -a -s\n";
+    std::cout << "    ./sha -224 --hex -s ee78012aa4fbf45e0ba4e0147436a662\n";
+    std::cout << "    ./sha -256 -a --string \"example with spaces\"\n";
+    std::cout << "    ./sha -384 --ascii -f file_name_1.txt\n";
+    std::cout << "    ./sha -512 -b --file /folder/binary_file.txt\n\n";
 
     std::cout << "COPYRIGHT:\n";
     std::cout << "    Copyright © 2020 Davide Fassio. MIT license.\n\n";
@@ -177,7 +182,7 @@ void help_ansi(){
     std::cout << "    sha - secure hash algorithm.\n\n";
 
     std::cout << "\e[4mSYNOPSIS\e[0m\n";
-    std::cout << "    ./sha {\e[4msha number\e[0m} {\e[4mInput options\e[0m} [\e[4mInput specification\e[0m]\n\n";
+    std::cout << "    ./sha {\e[4msha number\e[0m} {\e[4mInput format\e[0m} {\e[4mInput options\e[0m} [\e[4mInput specification\e[0m]\n\n";
 
     std::cout << "\e[4mSHA NUMBER\e[0m\n";
     std::cout << "Identify the algorithm that will process the input.\n";
@@ -186,6 +191,16 @@ void help_ansi(){
     std::cout << "    \e[1m-256\e[0m : (sha-2 family) use sha-256 algorithm;\n";
     std::cout << "    \e[1m-384\e[0m : (sha-2 family) use sha-384 algorithm;\n";
     std::cout << "    \e[1m-512\e[0m : (sha-2 family) use sha-512 algorithm.\n\n";
+
+    std::cout << "\e[4mINPUT FORMAT\e[0m\n";
+    std::cout << "Specify the format of the input data.\n";
+    std::cout << "    \e[1m-a, --ascii\e[0m\n";
+    std::cout << "        the input character will be converted in ASCII code\n";
+    std::cout << "        and the resulting bits will be processed.\n\n";
+    std::cout << "    \e[1m-e, --hex\e[0m\n";
+    std::cout << "        the input is a number written in hexadecimal.\n\n";
+    std::cout << "    \e[1m-b, --binary\e[0m\n";
+    std::cout << "        the input is a number written in binary.\n\n";
 
     std::cout << "\e[4mINPUT OPTIONS\e[0m\n";
     std::cout << "Specify where the program will take the input.\n";
@@ -209,11 +224,11 @@ void help_ansi(){
     std::cout << "    ./sha\n";
     std::cout << "    ./sha -h\n";
     std::cout << "    ./sha --help\n";
-    std::cout << "    ./sha -1 -s\n";
-    std::cout << "    ./sha -224 -s example_string_without_spaces\n";
-    std::cout << "    ./sha -256 --string \"example with spaces\"\n";
-    std::cout << "    ./sha -384 -f file_name_1.txt\n";
-    std::cout << "    ./sha -512 --file /folder/file_name_2.txt\n\n";
+    std::cout << "    ./sha -1 -a -s\n";
+    std::cout << "    ./sha -224 --hex -s ee78012aa4fbf45e0ba4e0147436a662\n";
+    std::cout << "    ./sha -256 -a \"example with spaces\"\n";
+    std::cout << "    ./sha -384 --ascii -f file_name_1.txt\n";
+    std::cout << "    ./sha -512 -b --file /folder/binary_file.txt\n\n";
 
     std::cout << "\e[4mCOPYRIGHT\e[0m\n";
     std::cout << "    Copyright © 2020 Davide Fassio. MIT license.\n\n";
