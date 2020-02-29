@@ -150,7 +150,7 @@ std::string sha_1(std::ifstream &in){
 
         size_t cnt = in.gcount();
         for(size_t i = 0; i < in.gcount(); i++){
-            if(sbuf[i] == 10 && i == in.gcount() - 1){
+            if(sbuf[i] == 10 && i == in.gcount() - 1 && in.gcount() != 64){
                 sbuf[i] = (char) 0;
                 cnt--;
             }
