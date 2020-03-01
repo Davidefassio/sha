@@ -15,8 +15,6 @@ int main(int argc, char* argv[]){
     std::string input, output;
     std::ifstream input_file;
 
-    std::cout << "Hash fucntions: SHA by Davide Fassio" << std::endl << std::endl;
-
     if(argc == 1){
         help();
         return 0;
@@ -120,7 +118,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    std::cout << "sha-" << sha_n << " -> " << output << std::endl;
+    std::cout << output << std::endl;
 
     // End
     return 0;

@@ -193,21 +193,83 @@ std::string sha_1(std::ifstream &in, int mode){
     digest[4] = 0xc3d2e1f0;
 
     while(true){
-        char sbuf[64];
-        in.read(sbuf, 64);
+        if(mode == 0){
+            char sbuf[64];
+            in.read(sbuf, 64);
 
-        size_t cnt = in.gcount();
-        for(size_t i = 0; i < in.gcount(); i++){
-            if(sbuf[i] == 10 && i == in.gcount() - 1 && in.gcount() != 64){
-                sbuf[i] = (char) 0;
+            size_t cnt = in.gcount();
+            for(size_t i = 0; i < in.gcount(); i++){
+                if(sbuf[i] == 10 && i == in.gcount() - 1 && in.gcount() != 64){
+                    sbuf[i] = (char) 0;
+                    cnt--;
+                }
+                else if(sbuf[i] == 10){
+                    sbuf[i] = (char) 32;
+                }
+            }
+
+            buffer.append(sbuf, cnt);
+        }
+        else if(mode == 1){
+            int tmp;
+            char sbuf_e[128], sbuf[64];
+            in.read(sbuf_e, 128);
+
+            size_t cnt = in.gcount();
+            if(sbuf_e[in.gcount() - 1] == 10 && in.gcount() != 128){
+                sbuf_e[in.gcount() - 1] = (char) 0;
                 cnt--;
             }
-            else if(sbuf[i] == 10){
-                sbuf[i] = (char) 32;
+
+            for(size_t i = 0; i < cnt / 2; i++){
+                std::stringstream ss;
+                ss << sbuf_e[i*2];
+                ss << sbuf_e[(i*2)+1];
+
+                ss >> std::hex >>  tmp;
+                sbuf[i] = (char) tmp;
+            }
+
+            if(cnt % 2 != 0){
+                std::stringstream ss;
+                ss << sbuf_e[cnt - 1];
+                ss << 0x30;
+
+                ss >> std::hex >> tmp;
+                sbuf[(cnt - 1) / 2] = (char) tmp;
+
+                buffer.append(sbuf, (cnt + 1) / 2);
+            }
+            else{
+                buffer.append(sbuf, cnt / 2);
+            }
+        }
+        else if(mode == 2){
+            char sbuf_b[512], sbuf[64] = {0};
+            in.read(sbuf_b, 512);
+
+            size_t cnt = in.gcount();
+            if(sbuf_b[in.gcount() - 1] == 10 && in.gcount() != 512){
+                sbuf_b[in.gcount() - 1] = (char) 0;
+                cnt--;
+            }
+
+            for(size_t i = 0; i < cnt; i++){
+                if(sbuf_b[i] == '1'){
+                    sbuf[(int) i / 8] |= (0x01 << (7 - (i%8)));
+                }
+            }
+
+            if(cnt % 8 == 0){
+                buffer.append(sbuf,  cnt / 8);
+            }
+            else{
+                buffer.append(sbuf, (cnt / 8) + 1);
             }
         }
 
-        buffer.append(sbuf, cnt);
+        std::cout << buffer.size() << std::endl;
+        std::cout << buffer << std::endl;
 
     	if(buffer.size() != 64){
     	    break;
