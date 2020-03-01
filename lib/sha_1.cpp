@@ -85,24 +85,26 @@ std::string sha_1(const std::string &s, int mode){
             buffer.append(sbuf, (std::size_t) is.gcount());
         }
         else if(mode == 1){
-            char sbuf_e[128], sbuf[64], tmp[2], out;
+            int tmp;
+            char sbuf_e[128], sbuf[64];
             is.read(sbuf_e, 128);
 
             for(size_t i = 0; i < (std::size_t) (is.gcount() / 2); i++){
-                tmp[0] = sbuf_e[i*2];
-                tmp[1] = sbuf_e[(i*2)+1];
+                std::stringstream ss;
+                ss << sbuf_e[i*2];
+                ss << sbuf_e[(i*2)+1];
 
-                // sscanf(tmp, "%hhx", &sbuf[i]);
-                sscanf(tmp, "%hhx", &out);
-                std::cout << (int) out << std::endl;
-                // sbuf[i] = 'f';
+                ss >> std::hex >>  tmp;
+                sbuf[i] = (char) tmp;
             }
 
             if(is.gcount() % 2 != 0){
-                tmp[0] = sbuf_e[is.gcount() - 1];
-                tmp[1] = (char) 0x30;
+                std::stringstream ss;
+                ss << sbuf_e[is.gcount() - 1];
+                ss << 0x30;
 
-                sscanf(tmp, "%hhx", &sbuf[(is.gcount() - 1) / 2]);
+                ss >> std::hex >> tmp;
+                sbuf[(is.gcount() - 1) / 2] = (char) tmp;
 
                 buffer.append(sbuf, (std::size_t) ((is.gcount() + 1) / 2));
             }
@@ -127,8 +129,6 @@ std::string sha_1(const std::string &s, int mode){
                 buffer.append(sbuf, (std::size_t) ((is.gcount() / 8) + 1));
             }
         }
-
-        std::cout << buffer << std::endl;
 
     	if(buffer.size() != 64){
     	    break;
