@@ -11,7 +11,7 @@ void help_ansi();
 
 int main(int argc, char* argv[]){
     bool flag = false;
-    int sha_n, mode;
+    int sha_n, input_source, input_mode;
     std::string input, output;
     std::ifstream input_file;
 
@@ -34,6 +34,10 @@ int main(int argc, char* argv[]){
             if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0 || strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0 || strcmp(argv[2], "-b") == 0 || strcmp(argv[2], "--binary") == 0){
                 if(strcmp(argv[3], "-s") == 0 || strcmp(argv[3], "--string") == 0){
                     flag = true;
+
+                    if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0){ input_mode = 0; }
+                    else if(strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0) { input_mode = 1; }
+                    else{ input_mode = 2; }
                 }
             }
         }
@@ -43,9 +47,13 @@ int main(int argc, char* argv[]){
             sscanf(argv[1], "-%d", &sha_n);
 
             if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0 || strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0 || strcmp(argv[2], "-b") == 0 || strcmp(argv[2], "--binary") == 0){
+                if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0){ input_mode = 0; }
+                else if(strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0) { input_mode = 1; }
+                else{ input_mode = 2; }
+
                 if(strcmp(argv[3], "-s") == 0 || strcmp(argv[3], "--string") == 0){
                     flag = true;
-                    mode = 0;
+                    input_source = 0;
                     input.append(argv[4]);
                 }
                 else if(strcmp(argv[3], "-f") == 0 || strcmp(argv[3], "--file") == 0){
@@ -56,7 +64,7 @@ int main(int argc, char* argv[]){
                     }
 
                     flag = true;
-                    mode = 1;
+                    input_source = 1;
                 }
             }
         }
@@ -71,11 +79,11 @@ int main(int argc, char* argv[]){
     // Switch the sha algorithms
     switch(sha_n){
         case 1:{
-            if(mode == 0){
-                output = sha_1(input);
+            if(input_source == 0){
+                output = sha_1(input, input_mode);
             }
-            else if(mode == 1){
-                output = sha_1(input_file);
+            else if(input_source == 1){
+                output = sha_1(input_file, input_mode);
             }
             break;
         }

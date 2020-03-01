@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <stdio.h>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
@@ -62,7 +63,7 @@ void buffer_to_block(std::string &buffer, uint32_t block[80]){
 }
 
 // Hash function, input from a string
-std::string sha_1(const std::string &s){
+std::string sha_1(const std::string &s, int mode){
     // Variables declaration
     uint32_t digest[5];
     std::string buffer;
@@ -78,9 +79,56 @@ std::string sha_1(const std::string &s){
     std::istringstream is(s);
 
     while(true){
-        char sbuf[64];
-        is.read(sbuf, 64);
-        buffer.append(sbuf, (std::size_t) is.gcount());
+        if(mode == 0){
+            char sbuf[64];
+            is.read(sbuf, 64);
+            buffer.append(sbuf, (std::size_t) is.gcount());
+        }
+        else if(mode == 1){
+            char sbuf_e[128], sbuf[64], tmp[2], out;
+            is.read(sbuf_e, 128);
+
+            for(size_t i = 0; i < (std::size_t) (is.gcount() / 2); i++){
+                tmp[0] = sbuf_e[i*2];
+                tmp[1] = sbuf_e[(i*2)+1];
+
+                // sscanf(tmp, "%hhx", &sbuf[i]);
+                sscanf(tmp, "%hhx", &out);
+                std::cout << (int) out << std::endl;
+                // sbuf[i] = 'f';
+            }
+
+            if(is.gcount() % 2 != 0){
+                tmp[0] = sbuf_e[is.gcount() - 1];
+                tmp[1] = (char) 0x30;
+
+                sscanf(tmp, "%hhx", &sbuf[(is.gcount() - 1) / 2]);
+
+                buffer.append(sbuf, (std::size_t) ((is.gcount() + 1) / 2));
+            }
+            else{
+                buffer.append(sbuf, (std::size_t) is.gcount() / 2);
+            }
+        }
+        else if(mode == 2){
+            char sbuf_b[512], sbuf[64] = {0};
+            is.read(sbuf_b, 512);
+
+            for(size_t i = 0; i < is.gcount(); i++){
+                if(sbuf_b[i] == '1'){
+                    sbuf[(int) i / 8] |= (0x01 << (7 - (i%8)));
+                }
+            }
+
+            if(is.gcount() % 8 == 0){
+                buffer.append(sbuf, (std::size_t) is.gcount() / 8);
+            }
+            else{
+                buffer.append(sbuf, (std::size_t) ((is.gcount() / 8) + 1));
+            }
+        }
+
+        std::cout << buffer << std::endl;
 
     	if(buffer.size() != 64){
     	    break;
@@ -131,7 +179,7 @@ std::string sha_1(const std::string &s){
 }
 
 // Hash function, input from a file
-std::string sha_1(std::ifstream &in){
+std::string sha_1(std::ifstream &in, int mode){
     // Variables declaration
     uint32_t digest[5];
     std::string buffer;
