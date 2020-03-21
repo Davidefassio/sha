@@ -90,15 +90,19 @@ int main(int argc, char* argv[]){
             char output_224[225];
             sha_224(input, output_224);
             break;
-        }
+        } */
 
         case 256:{
-            char output_256[257];
-            sha_256(input, output_256);
+            if(input_source == 0){
+                output = sha_256(input, input_mode);
+            }
+            else if(input_source == 1){
+                output = sha_256(input_file, input_mode);
+            }
             break;
         }
 
-        case 384:{
+        /* case 384:{
             char output_384[385];
             sha_384(input, output_384);
             break;
@@ -232,7 +236,7 @@ void help_ansi(){
     std::cout << "    ./sha --help\n";
     std::cout << "    ./sha -1 -a -s\n";
     std::cout << "    ./sha -224 --hex -s ee78012aa4fbf45e0ba4e0147436a662\n";
-    std::cout << "    ./sha -256 -a \"example with spaces\"\n";
+    std::cout << "    ./sha -256 -a --string \"example with spaces\"\n";
     std::cout << "    ./sha -384 --ascii -f file_name_1.txt\n";
     std::cout << "    ./sha -512 -b --file /folder/binary_file.txt\n\n";
 
