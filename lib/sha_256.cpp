@@ -196,16 +196,9 @@ std::string sha_256(const std::string &s, int mode){
 // Hash function, input from a file
 std::string sha_256(std::ifstream &in, int mode){
     // Variables declaration
-    uint32_t digest[5];
+    uint32_t digest[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
     std::string buffer;
     uint64_t transforms = 0;
-
-    // SHA1 initialization constants
-    digest[0] = 0x67452301;
-    digest[1] = 0xefcdab89;
-    digest[2] = 0x98badcfe;
-    digest[3] = 0x10325476;
-    digest[4] = 0xc3d2e1f0;
 
     while(true){
         if(mode == 0){
@@ -283,14 +276,11 @@ std::string sha_256(std::ifstream &in, int mode){
             }
         }
 
-        std::cout << buffer.size() << std::endl;
-        std::cout << buffer << std::endl;
-
     	if(buffer.size() != 64){
     	    break;
     	}
 
-        uint32_t block[80];
+        uint32_t block[64];
         sha256::buffer_to_block(buffer, block);
         sha256::transform(digest, block, transforms);
         buffer.clear();
@@ -306,7 +296,7 @@ std::string sha_256(std::ifstream &in, int mode){
         buffer += (char) 0x00;
     }
 
-    uint32_t block[80];
+    uint32_t block[64];
     sha256::buffer_to_block(buffer, block);
 
     if(orig_size > 56){
@@ -319,15 +309,19 @@ std::string sha_256(std::ifstream &in, int mode){
     // Append total_bits, split this uint64_t into two uint32_t
     block[14] = (uint32_t) (total_bits >> 32);
     block[15] = (uint32_t) total_bits;
-    for(int i = 16; i < 80; i++){
-        block[i] = sha256::b_rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
+
+    uint32_t s0, s1;
+    for(int i = 16; i < 64; i++){
+        s0 = sha256::b_rol(block[i-15], 7) ^ sha256::b_rol(block[i-15], 18) ^ (block[i-15] >> 3);
+        s1 = sha256::b_rol(block[i-2], 17) ^ sha256::b_rol(block[i-2], 19) ^ (block[i-2] >> 10);
+        block[i] = block[i-16] + s0 + block[i-7] + s1;
     }
 
     sha256::transform(digest, block, transforms);
 
     // Hex std::string
     std::ostringstream result;
-    for(size_t i = 0; i < 5; i++){
+    for(size_t i = 0; i < 8; i++){
         result << std::hex << std::setfill('0') << std::setw(8) << digest[i];
     }
 
