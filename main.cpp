@@ -87,8 +87,12 @@ int main(int argc, char* argv[]){
         }
 
         /* case 224:{
-            char output_224[225];
-            sha_224(input, output_224);
+            if(input_source == 0){
+                output = sha_224(input, input_mode);
+            }
+            else if(input_source == 1){
+                output = sha_224(input_file, input_mode);
+            }
             break;
         } */
 
@@ -103,14 +107,22 @@ int main(int argc, char* argv[]){
         }
 
         /* case 384:{
-            char output_384[385];
-            sha_384(input, output_384);
+            if(input_source == 0){
+                output = sha_384(input, input_mode);
+            }
+            else if(input_source == 1){
+                output = sha_384(input_file, input_mode);
+            }
             break;
         }
 
         case 512:{
-            char output_512[513];
-            sha_512(input, output_512);
+            if(input_source == 0){
+                output = sha_512(input, input_mode);
+            }
+            else if(input_source == 1){
+                output = sha_512(input_file, input_mode);
+            }
             break;
         }*/
 
