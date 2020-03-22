@@ -106,7 +106,7 @@ int main(int argc, char* argv[]){
             break;
         }
 
-        /* case 384:{
+        case 384:{
             if(input_source == 0){
                 output = sha_384(input, input_mode);
             }
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]){
                 output = sha_384(input_file, input_mode);
             }
             break;
-        } */
+        }
 
         case 512:{
             if(input_source == 0){
