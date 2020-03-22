@@ -8,4 +8,4 @@
 std::string sha_1(const std::string &, int);
 std::string sha_1(std::ifstream &, int);
 
-#endif /* SHA_1_HPP */
+#endif /* SHA_1_HPP */ 
