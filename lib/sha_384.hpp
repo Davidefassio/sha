@@ -1,8 +1,11 @@
 #ifndef SHA_384_HPP
 #define SHA_384_HPP
 
-void sha_384(char* input, char* output){
+#include <string>
+#include <fstream>
 
-}
+// Hashing function
+std::string sha_384(const std::string &, int);
+std::string sha_384(std::ifstream &, int);
 
 #endif /* SHA_384_HPP */
