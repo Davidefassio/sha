@@ -36,8 +36,9 @@ namespace sha256
 
         for(int i = 0; i < 64; i++){
             s0 = sha256::b_rol(a, 2) ^ sha256::b_rol(a, 13) ^ sha256::b_rol(a, 22);
-            maj = (a & b) ^ (a & c) ^ (b ^ c);
+            maj = (a & b) ^ (a & c) ^ (b & c);
             t2 = s0 + maj;
+
             s1 = sha256::b_rol(e, 6) ^ sha256::b_rol(e, 11) ^ sha256::b_rol(e, 25);
             ch = (e & f) ^ ((~e) & g);
             t1 = h + s1 + ch + sha256::k[i] + block[i];
@@ -66,7 +67,7 @@ namespace sha256
     }
 
     // Convert a 512bits buffer into 64 32bits words
-    void buffer_to_block(std::string &buffer, uint32_t block[80]){
+    void buffer_to_block(std::string &buffer, uint32_t block[64]){
         for(size_t i = 0; i < 16; i++){
             block[i] = (buffer[4*i+3] & 0xff) | (buffer[4*i+2] & 0xff)<<8 | (buffer[4*i+1] & 0xff)<<16 | (buffer[4*i+0] & 0xff)<<24;
         }
