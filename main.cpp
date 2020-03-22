@@ -86,7 +86,7 @@ int main(int argc, char* argv[]){
             break;
         }
 
-        /* case 224:{
+        case 224:{
             if(input_source == 0){
                 output = sha_224(input, input_mode);
             }
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]){
                 output = sha_224(input_file, input_mode);
             }
             break;
-        } */
+        }
 
         case 256:{
             if(input_source == 0){
