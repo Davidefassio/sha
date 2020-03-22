@@ -114,7 +114,7 @@ int main(int argc, char* argv[]){
                 output = sha_384(input_file, input_mode);
             }
             break;
-        }
+        } */
 
         case 512:{
             if(input_source == 0){
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]){
                 output = sha_512(input_file, input_mode);
             }
             break;
-        }*/
+        }
 
         default:{
             std::cout << "sha: sha-" << sha_n << " doesn't exist" << std::endl;
