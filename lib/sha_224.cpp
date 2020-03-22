@@ -177,7 +177,7 @@ std::string sha_224(const std::string &s, int mode){
     block[15] = (uint32_t) total_bits;
 
     uint32_t s0, s1;
-    for(int i = 16; i < 64; i++){
+    for(size_t i = 16; i < 64; i++){
         s0 = sha224::b_rol(block[i-15], 7) ^ sha224::b_rol(block[i-15], 18) ^ (block[i-15] >> 3);
         s1 = sha224::b_rol(block[i-2], 17) ^ sha224::b_rol(block[i-2], 19) ^ (block[i-2] >> 10);
         block[i] = block[i-16] + s0 + block[i-7] + s1;
@@ -312,7 +312,7 @@ std::string sha_224(std::ifstream &in, int mode){
     block[15] = (uint32_t) total_bits;
 
     uint32_t s0, s1;
-    for(int i = 16; i < 64; i++){
+    for(size_t i = 16; i < 64; i++){
         s0 = sha224::b_rol(block[i-15], 7) ^ sha224::b_rol(block[i-15], 18) ^ (block[i-15] >> 3);
         s1 = sha224::b_rol(block[i-2], 17) ^ sha224::b_rol(block[i-2], 19) ^ (block[i-2] >> 10);
         block[i] = block[i-16] + s0 + block[i-7] + s1;
