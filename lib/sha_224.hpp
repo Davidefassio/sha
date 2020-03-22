@@ -1,8 +1,11 @@
 #ifndef SHA_224_HPP
 #define SHA_224_HPP
 
-void sha_224(char* input, char* output){
+#include <string>
+#include <fstream>
 
-}
+// Hashing function
+std::string sha_224(const std::string &, int);
+std::string sha_224(std::ifstream &, int);
 
 #endif /* SHA_224_HPP */
