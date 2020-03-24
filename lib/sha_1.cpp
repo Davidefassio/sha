@@ -1,64 +1,92 @@
+/*
+    MIT License
+
+    Copyright (c) 2020 Davide Fassio
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+*/
+
 #include <cstdint>
 #include <stdio.h>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-#include "sha_1.hpp"
+#include "../include/sha_1.hpp"
 
-// Leftrotate a 32bit number
-uint32_t rol(uint32_t value, size_t bits){
-    return (value << bits) | (value >> (32 - bits));
-}
 
-// Hash a single 512-bit block. This is the core of the algorithm
-void transform(uint32_t digest[5], uint32_t block[80], uint64_t &transforms){
-    uint32_t a = digest[0];
-    uint32_t b = digest[1];
-    uint32_t c = digest[2];
-    uint32_t d = digest[3];
-    uint32_t e = digest[4];
-    uint32_t f, temp;
-
-    for(int i = 0; i < 80; i++){
-        if(i < 20){
-            f = (d ^ (b & (c ^ d))) + 0x5a827999;
-        }
-        else if(i < 40){
-            f = (b ^ c ^ d) + 0x6ed9eba1;
-        }
-        else if(i < 60){
-            f = ((b & c) | (d & (b | c))) + 0x8f1bbcdc;
-        }
-        else{
-            f = (b ^ c ^ d) + 0xca62c1d6;
-        }
-
-        temp = rol(a, 5) + f + e + block[i];
-        e = d;
-        d = c;
-        c = rol(b, 30);
-        b = a;
-        a = temp;
+namespace sha1
+{
+    // Leftrotate a 32bit number
+    uint32_t rol(uint32_t value, size_t bits){
+        return (value << bits) | (value >> (32 - bits));
     }
 
-    digest[0] += a;
-    digest[1] += b;
-    digest[2] += c;
-    digest[3] += d;
-    digest[4] += e;
+    // Hash a single 512-bit block. This is the core of the algorithm
+    void transform(uint32_t digest[5], uint32_t block[80], uint64_t &transforms){
+        uint32_t a = digest[0];
+        uint32_t b = digest[1];
+        uint32_t c = digest[2];
+        uint32_t d = digest[3];
+        uint32_t e = digest[4];
+        uint32_t f, temp;
 
-    // Count the number of transformations
-    transforms++;
-}
+        for(int i = 0; i < 80; i++){
+            if(i < 20){
+                f = (d ^ (b & (c ^ d))) + 0x5a827999;
+            }
+            else if(i < 40){
+                f = (b ^ c ^ d) + 0x6ed9eba1;
+            }
+            else if(i < 60){
+                f = ((b & c) | (d & (b | c))) + 0x8f1bbcdc;
+            }
+            else{
+                f = (b ^ c ^ d) + 0xca62c1d6;
+            }
 
-// Convert a 512bits buffer into 80 32bits words
-void buffer_to_block(std::string &buffer, uint32_t block[80]){
-    for(size_t i = 0; i < 16; i++){
-        block[i] = (buffer[4*i+3] & 0xff) | (buffer[4*i+2] & 0xff)<<8 | (buffer[4*i+1] & 0xff)<<16 | (buffer[4*i+0] & 0xff)<<24;
+            temp = sha1::rol(a, 5) + f + e + block[i];
+            e = d;
+            d = c;
+            c = sha1::rol(b, 30);
+            b = a;
+            a = temp;
+        }
+
+        digest[0] += a;
+        digest[1] += b;
+        digest[2] += c;
+        digest[3] += d;
+        digest[4] += e;
+
+        // Count the number of transformations
+        transforms++;
     }
 
-    for(size_t i = 16; i < 80; i++){
-        block[i] = rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
+    // Convert a 512bits buffer into 80 32bits words
+    void buffer_to_block(std::string &buffer, uint32_t block[80]){
+        for(size_t i = 0; i < 16; i++){
+            block[i] = (buffer[4*i+3] & 0xff) | (buffer[4*i+2] & 0xff)<<8 | (buffer[4*i+1] & 0xff)<<16 | (buffer[4*i+0] & 0xff)<<24;
+        }
+
+        for(size_t i = 16; i < 80; i++){
+            block[i] = sha1::rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
+        }
     }
 }
 
@@ -135,8 +163,8 @@ std::string sha_1(const std::string &s, int mode){
     	}
 
         uint32_t block[80];
-        buffer_to_block(buffer, block);
-        transform(digest, block, transforms);
+        sha1::buffer_to_block(buffer, block);
+        sha1::transform(digest, block, transforms);
         buffer.clear();
     }
 
@@ -151,10 +179,10 @@ std::string sha_1(const std::string &s, int mode){
     }
 
     uint32_t block[80];
-    buffer_to_block(buffer, block);
+    sha1::buffer_to_block(buffer, block);
 
     if(orig_size > 56){
-        transform(digest, block, transforms);
+        sha1::transform(digest, block, transforms);
         for(size_t i = 0; i < 14; i++){
             block[i] = 0;
         }
@@ -164,10 +192,10 @@ std::string sha_1(const std::string &s, int mode){
     block[14] = (uint32_t) (total_bits >> 32);
     block[15] = (uint32_t) total_bits;
     for(int i = 16; i < 80; i++){
-        block[i] = rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
+        block[i] = sha1::rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
     }
 
-    transform(digest, block, transforms);
+    sha1::transform(digest, block, transforms);
 
     // Hex std::string
     std::ostringstream result;
@@ -276,8 +304,8 @@ std::string sha_1(std::ifstream &in, int mode){
     	}
 
         uint32_t block[80];
-        buffer_to_block(buffer, block);
-        transform(digest, block, transforms);
+        sha1::buffer_to_block(buffer, block);
+        sha1::transform(digest, block, transforms);
         buffer.clear();
     }
 
@@ -292,10 +320,10 @@ std::string sha_1(std::ifstream &in, int mode){
     }
 
     uint32_t block[80];
-    buffer_to_block(buffer, block);
+    sha1::buffer_to_block(buffer, block);
 
     if(orig_size > 56){
-        transform(digest, block, transforms);
+        sha1::transform(digest, block, transforms);
         for(size_t i = 0; i < 14; i++){
             block[i] = 0;
         }
@@ -305,10 +333,10 @@ std::string sha_1(std::ifstream &in, int mode){
     block[14] = (uint32_t) (total_bits >> 32);
     block[15] = (uint32_t) total_bits;
     for(int i = 16; i < 80; i++){
-        block[i] = rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
+        block[i] = sha1::rol(block[i-3] ^ block[i-8] ^ block[i-14] ^ block[i-16], 1);
     }
 
-    transform(digest, block, transforms);
+    sha1::transform(digest, block, transforms);
 
     // Hex std::string
     std::ostringstream result;
