@@ -1,8 +1,8 @@
 # SHA in C++
 
 ## Syntax
-On Linux/Max run the program using ./sha
-On Windows run it using sha.exe
+On Linux/Max run the program using ./sha.
+On Windows run it using sha.exe.
 
 For some help: ./sha -h
                      --help
