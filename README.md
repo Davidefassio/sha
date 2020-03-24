@@ -1,7 +1,7 @@
 # SHA in C++
 
 ## Syntax
-On Linux/Max run the program using `./sha`.\
+On Linux/Max run the program using `./sha`, the examples below uses this syntax.\
 On Windows run it using `sha.exe`.
 
 For some help: 
