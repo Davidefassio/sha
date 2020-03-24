@@ -58,5 +58,6 @@ SOFTWARE.
 ```
 
 ## Author
-##### Davide Fassio
+#### Davide Fassio
+Davide Fassio
 
