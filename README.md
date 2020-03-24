@@ -19,3 +19,15 @@ Ordinary syntax:
       -512  -b
             --binary
 ```
+
+Some examples:
+```c++
+      ./sha
+      ./sha -h
+      ./sha --help
+      ./sha -1 -a -s
+      ./sha -224 --hex -s ee78012aa4fbf45e0ba4e0147436a662
+      ./sha -256 -a --string "example with spaces"
+      ./sha -384 --ascii -f file_name_1.txt
+      ./sha -512 -b --file /folder/binary_file.txt
+```
