@@ -8,7 +8,7 @@ For some help:
 ```c++
 ./sha -h
       --help
-
+```
 
 Ordinary syntax:
 ```c++
