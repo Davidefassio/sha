@@ -8,6 +8,7 @@ For some help: ./sha -h
                      --help
 
 Ordinary syntax:
+```c++
 ./sha -1    -a        -s        "string or filename"
 
       -224  --ascii   --string
@@ -19,3 +20,4 @@ Ordinary syntax:
       -512  -b
       
             --binary
+```
