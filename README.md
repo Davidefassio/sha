@@ -4,8 +4,11 @@
 On Linux/Max run the program using `./sha`.\
 On Windows run it using `sha.exe`.
 
-For some help: ./sha -h
-                     --help
+For some help: 
+```c++
+./sha -h
+      --help
+
 
 Ordinary syntax:
 ```c++
