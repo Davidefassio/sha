@@ -32,6 +32,9 @@ Some examples:
 ./sha -512 -b --file /folder/binary_file.txt
 ```
 
+## Make
+To compile the program in Linux/Mac you can use the Makefile, digit in the shell ```make``` and it should create the executable named ```sha```.
+
 ## License
 ```
 MIT License
