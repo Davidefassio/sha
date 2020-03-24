@@ -10,14 +10,9 @@ For some help: ./sha -h
 Ordinary syntax:
 ```c++
 ./sha -1    -a        -s        "string or filename"
-
       -224  --ascii   --string
-
       -256  -e        -f
-
       -384  --hex     --file
-
       -512  -b
-      
             --binary
 ```
