@@ -296,9 +296,6 @@ std::string sha_1(std::ifstream &in, int mode){
             }
         }
 
-        std::cout << buffer.size() << std::endl;
-        std::cout << buffer << std::endl;
-
     	if(buffer.size() != 64){
     	    break;
     	}
