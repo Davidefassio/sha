@@ -32,6 +32,9 @@ Some examples:
 ./sha -512 -b --file /folder/binary_file.txt
 ```
 
+## Library
+If you want to use the source code as library take the files from ```lib``` and ```include```, include the file ```.hpp```in your code, call the hashing function you need as indicated in the header and compile with the ```.cpp```file.
+
 ## Make
 To compile the program in Linux/Mac you can use the Makefile, digit in the shell ```make``` and it should create the executable named ```sha```.
 
