@@ -39,40 +39,32 @@ namespace sha1
 
     // Hash a single 512-bit block. This is the core of the algorithm
     void transform(uint32_t digest[5], uint32_t block[80], uint64_t &transforms){
-        uint32_t a = digest[0];
-        uint32_t b = digest[1];
-        uint32_t c = digest[2];
-        uint32_t d = digest[3];
-        uint32_t e = digest[4];
-        uint32_t f, temp;
+        uint32_t v[5], f, tmp;
+        for(int i = 0; i < 5; i++){ v[i] = digest[i]; }
 
         for(int i = 0; i < 80; i++){
             if(i < 20){
-                f = (d ^ (b & (c ^ d))) + 0x5a827999;
+                f = (v[3] ^ (v[1] & (v[2] ^ v[3]))) + 0x5a827999;
             }
             else if(i < 40){
-                f = (b ^ c ^ d) + 0x6ed9eba1;
+                f = (v[1] ^ v[2] ^ v[3]) + 0x6ed9eba1;
             }
             else if(i < 60){
-                f = ((b & c) | (d & (b | c))) + 0x8f1bbcdc;
+                f = ((v[1] & v[2]) | (v[3] & (v[1] | v[2]))) + 0x8f1bbcdc;
             }
             else{
-                f = (b ^ c ^ d) + 0xca62c1d6;
+                f = (v[1] ^ v[2] ^ v[3]) + 0xca62c1d6;
             }
 
-            temp = sha1::rol(a, 5) + f + e + block[i];
-            e = d;
-            d = c;
-            c = sha1::rol(b, 30);
-            b = a;
-            a = temp;
+            tmp = sha1::rol(v[0], 5) + f + v[4] + block[i];
+            v[4] = v[3];
+            v[3] = v[2];
+            v[2] = sha1::rol(v[1], 30);
+            v[1] = v[0];
+            v[0] = tmp;
         }
 
-        digest[0] += a;
-        digest[1] += b;
-        digest[2] += c;
-        digest[3] += d;
-        digest[4] += e;
+        for(int i = 0; i < 5; i++){ digest[i] += v[i]; }
 
         // Count the number of transformations
         transforms++;
@@ -96,6 +88,7 @@ std::string sha_1(const std::string &s, int mode){
     uint32_t digest[5];
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     // SHA1 initialization constants
     digest[0] = 0x67452301;
@@ -129,12 +122,13 @@ std::string sha_1(const std::string &s, int mode){
             if(is.gcount() % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[is.gcount() - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(is.gcount() - 1) / 2] = (char) tmp;
+                sbuf[(is.gcount() - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (std::size_t) ((is.gcount() + 1) / 2));
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, (std::size_t) is.gcount() / 2);
@@ -154,7 +148,9 @@ std::string sha_1(const std::string &s, int mode){
                 buffer.append(sbuf, (std::size_t) is.gcount() / 8);
             }
             else{
+                sbuf[is.gcount() / 8] |= ((0x01 << (7 - (is.gcount()%8))));
                 buffer.append(sbuf, (std::size_t) ((is.gcount() / 8) + 1));
+                min_len = 8 - (is.gcount() % 8);
             }
         }
 
@@ -169,10 +165,10 @@ std::string sha_1(const std::string &s, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*64 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*64 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 64){
         buffer += (char) 0x00;
@@ -212,6 +208,7 @@ std::string sha_1(std::ifstream &in, int mode){
     uint32_t digest[5];
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     // SHA1 initialization constants
     digest[0] = 0x67452301;
@@ -261,12 +258,13 @@ std::string sha_1(std::ifstream &in, int mode){
             if(cnt % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[cnt - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(cnt - 1) / 2] = (char) tmp;
+                sbuf[(cnt - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (cnt + 1) / 2);
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, cnt / 2);
@@ -292,7 +290,9 @@ std::string sha_1(std::ifstream &in, int mode){
                 buffer.append(sbuf,  cnt / 8);
             }
             else{
+                sbuf[cnt / 8] |= ((0x01 << (7 - (cnt%8))));
                 buffer.append(sbuf, (cnt / 8) + 1);
+                min_len = 8 - (cnt % 8);
             }
         }
 
@@ -307,10 +307,10 @@ std::string sha_1(std::ifstream &in, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*64 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*64 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 64){
         buffer += (char) 0x00;
