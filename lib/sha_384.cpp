@@ -56,43 +56,29 @@ namespace sha384
 
     // Hash a single 1024-bit block. This is the core of the algorithm
     void transform(uint64_t digest[8], uint64_t block[80], uint64_t &transforms){
-        uint64_t a = digest[0];
-        uint64_t b = digest[1];
-        uint64_t c = digest[2];
-        uint64_t d = digest[3];
-        uint64_t e = digest[4];
-        uint64_t f = digest[5];
-        uint64_t g = digest[6];
-        uint64_t h = digest[7];
-        uint64_t s0, s1, t1, t2, maj, ch;
+        uint64_t v[8], s0, s1, t1, t2, maj, ch;
+        for(int i = 0; i < 8; i++){ v[i] = digest[i]; }
 
         for(int i = 0; i < 80; i++){
-            s0 = sha384::b_rol(a, 28) ^ sha384::b_rol(a, 34) ^ sha384::b_rol(a, 39);
-            maj = (a & b) ^ (a & c) ^ (b & c);
+            s0 = sha384::b_rol(v[0], 28) ^ sha384::b_rol(v[0], 34) ^ sha384::b_rol(v[0], 39);
+            maj = (v[0] & v[1]) ^ (v[0] & v[2]) ^ (v[1] & v[2]);
             t2 = s0 + maj;
 
-            s1 = sha384::b_rol(e, 14) ^ sha384::b_rol(e, 18) ^ sha384::b_rol(e, 41);
-            ch = (e & f) ^ ((~e) & g);
-            t1 = h + s1 + ch + sha384::k[i] + block[i];
+            s1 = sha384::b_rol(v[4], 14) ^ sha384::b_rol(v[4], 18) ^ sha384::b_rol(v[4], 41);
+            ch = (v[4] & v[5]) ^ ((~v[4]) & v[6]);
+            t1 = v[7] + s1 + ch + sha384::k[i] + block[i];
 
-            h = g;
-            g = f;
-            f = e;
-            e = d + t1;
-            d = c;
-            c = b;
-            b = a;
-            a = t1 + t2;
+            v[7] = v[6];
+            v[6] = v[5];
+            v[5] = v[4];
+            v[4] = v[3] + t1;
+            v[3] = v[2];
+            v[2] = v[1];
+            v[1] = v[0];
+            v[0] = t1 + t2;
         }
 
-        digest[0] += a;
-        digest[1] += b;
-        digest[2] += c;
-        digest[3] += d;
-        digest[4] += e;
-        digest[5] += f;
-        digest[6] += g;
-        digest[7] += h;
+        for(int i = 0; i < 8; i++){ digest[i] += v[i]; }
 
         // Count the number of transformations
         transforms++;
@@ -123,6 +109,7 @@ std::string sha_384(const std::string &s, int mode){
                           0x67332667ffc00b31, 0x8eb44a8768581511, 0xdb0c2e0d64f98fa7, 0x47b5481dbefa4fa4};
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     std::istringstream is(s);
 
@@ -149,12 +136,13 @@ std::string sha_384(const std::string &s, int mode){
             if(is.gcount() % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[is.gcount() - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(is.gcount() - 1) / 2] = (char) tmp;
+                sbuf[(is.gcount() - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (std::size_t) ((is.gcount() + 1) / 2));
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, (std::size_t) is.gcount() / 2);
@@ -174,7 +162,9 @@ std::string sha_384(const std::string &s, int mode){
                 buffer.append(sbuf, (std::size_t) is.gcount() / 8);
             }
             else{
+                sbuf[is.gcount() / 8] |= ((0x01 << (7 - (is.gcount()%8))));
                 buffer.append(sbuf, (std::size_t) ((is.gcount() / 8) + 1));
+                min_len = 8 - (is.gcount() % 8);
             }
         }
 
@@ -189,10 +179,10 @@ std::string sha_384(const std::string &s, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*128 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*128 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 128){
         buffer += (char) 0x00;
@@ -211,7 +201,6 @@ std::string sha_384(const std::string &s, int mode){
     // Append total_bits, split this uint128_t into two uint64_t
     block[14] = (uint64_t) 0x00;
     block[15] = total_bits;
-
     uint64_t s0, s1;
     for(size_t i = 16; i < 80; i++){
         s0 = sha384::b_rol(block[i-15], 1) ^ sha384::b_rol(block[i-15], 8) ^ (block[i-15] >> 7);
@@ -237,6 +226,7 @@ std::string sha_384(std::ifstream &in, int mode){
                           0x67332667ffc00b31, 0x8eb44a8768581511, 0xdb0c2e0d64f98fa7, 0x47b5481dbefa4fa4};
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     while(true){
         if(mode == 0){
@@ -279,12 +269,13 @@ std::string sha_384(std::ifstream &in, int mode){
             if(cnt % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[cnt - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(cnt - 1) / 2] = (char) tmp;
+                sbuf[(cnt - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (cnt + 1) / 2);
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, cnt / 2);
@@ -310,7 +301,9 @@ std::string sha_384(std::ifstream &in, int mode){
                 buffer.append(sbuf,  cnt / 8);
             }
             else{
+                sbuf[cnt / 8] |= ((0x01 << (7 - (cnt%8))));
                 buffer.append(sbuf, (cnt / 8) + 1);
+                min_len = 8 - (cnt % 8);
             }
         }
 
@@ -325,10 +318,10 @@ std::string sha_384(std::ifstream &in, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*64 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*64 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 128){
         buffer += (char) 0x00;
@@ -347,7 +340,6 @@ std::string sha_384(std::ifstream &in, int mode){
     // Append total_bits, split this uint128_t into two uint64_t
     block[14] = (uint64_t) 0x00;
     block[15] = total_bits;
-
     uint64_t s0, s1;
     for(int i = 16; i < 80; i++){
         s0 = sha384::b_rol(block[i-15], 1) ^ sha384::b_rol(block[i-15], 8) ^ (block[i-15] >> 7);
