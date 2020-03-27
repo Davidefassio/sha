@@ -55,6 +55,7 @@ int main(int argc, char* argv[]){
 
             if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0 || strcmp(argv[2], "-e") == 0 || strcmp(argv[2], "--hex") == 0 || strcmp(argv[2], "-b") == 0 || strcmp(argv[2], "--binary") == 0){
                 if(strcmp(argv[3], "-s") == 0 || strcmp(argv[3], "--string") == 0){
+                    input_source = 0;
                     flag = true;
 
                     if(strcmp(argv[2], "-a") == 0 || strcmp(argv[2], "--ascii") == 0){ input_mode = 0; }
