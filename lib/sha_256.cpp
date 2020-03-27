@@ -48,43 +48,29 @@ namespace sha256
 
     // Hash a single 512-bit block. This is the core of the algorithm
     void transform(uint32_t digest[8], uint32_t block[64], uint64_t &transforms){
-        uint32_t a = digest[0];
-        uint32_t b = digest[1];
-        uint32_t c = digest[2];
-        uint32_t d = digest[3];
-        uint32_t e = digest[4];
-        uint32_t f = digest[5];
-        uint32_t g = digest[6];
-        uint32_t h = digest[7];
-        uint32_t s0, s1, t1, t2, maj, ch;
+        uint32_t v[8], s0, s1, t1, t2, maj, ch;
+        for(int i = 0; i < 8; i++){ v[i] = digest[i]; }
 
         for(int i = 0; i < 64; i++){
-            s0 = sha256::b_rol(a, 2) ^ sha256::b_rol(a, 13) ^ sha256::b_rol(a, 22);
-            maj = (a & b) ^ (a & c) ^ (b & c);
+            s0 = sha256::b_rol(v[0], 2) ^ sha256::b_rol(v[0], 13) ^ sha256::b_rol(v[0], 22);
+            maj = (v[0] & v[1]) ^ (v[0] & v[2]) ^ (v[1] & v[2]);
             t2 = s0 + maj;
 
-            s1 = sha256::b_rol(e, 6) ^ sha256::b_rol(e, 11) ^ sha256::b_rol(e, 25);
-            ch = (e & f) ^ ((~e) & g);
-            t1 = h + s1 + ch + sha256::k[i] + block[i];
+            s1 = sha256::b_rol(v[4], 6) ^ sha256::b_rol(v[4], 11) ^ sha256::b_rol(v[4], 25);
+            ch = (v[4] & v[5]) ^ ((~v[4]) & v[6]);
+            t1 = v[7] + s1 + ch + sha256::k[i] + block[i];
 
-            h = g;
-            g = f;
-            f = e;
-            e = d + t1;
-            d = c;
-            c = b;
-            b = a;
-            a = t1 + t2;
+            v[7] = v[6];
+            v[6] = v[5];
+            v[5] = v[4];
+            v[4] = v[3] + t1;
+            v[3] = v[2];
+            v[2] = v[1];
+            v[1] = v[0];
+            v[0] = t1 + t2;
         }
 
-        digest[0] += a;
-        digest[1] += b;
-        digest[2] += c;
-        digest[3] += d;
-        digest[4] += e;
-        digest[5] += f;
-        digest[6] += g;
-        digest[7] += h;
+        for(int i = 0; i < 8; i++){ digest[i] += v[i]; }
 
         // Count the number of transformations
         transforms++;
@@ -111,6 +97,7 @@ std::string sha_256(const std::string &s, int mode){
     uint32_t digest[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     std::istringstream is(s);
 
@@ -137,12 +124,13 @@ std::string sha_256(const std::string &s, int mode){
             if(is.gcount() % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[is.gcount() - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(is.gcount() - 1) / 2] = (char) tmp;
+                sbuf[(is.gcount() - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (std::size_t) ((is.gcount() + 1) / 2));
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, (std::size_t) is.gcount() / 2);
@@ -162,7 +150,9 @@ std::string sha_256(const std::string &s, int mode){
                 buffer.append(sbuf, (std::size_t) is.gcount() / 8);
             }
             else{
+                sbuf[is.gcount() / 8] |= ((0x01 << (7 - (is.gcount()%8))));
                 buffer.append(sbuf, (std::size_t) ((is.gcount() / 8) + 1));
+                min_len = 8 - (is.gcount() % 8);
             }
         }
 
@@ -177,10 +167,10 @@ std::string sha_256(const std::string &s, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*64 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*64 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 64){
         buffer += (char) 0x00;
@@ -199,7 +189,6 @@ std::string sha_256(const std::string &s, int mode){
     // Append total_bits, split this uint64_t into two uint32_t
     block[14] = (uint32_t) (total_bits >> 32);
     block[15] = (uint32_t) total_bits;
-
     uint32_t s0, s1;
     for(size_t i = 16; i < 64; i++){
         s0 = sha256::b_rol(block[i-15], 7) ^ sha256::b_rol(block[i-15], 18) ^ (block[i-15] >> 3);
@@ -224,6 +213,7 @@ std::string sha_256(std::ifstream &in, int mode){
     uint32_t digest[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
     std::string buffer;
     uint64_t transforms = 0;
+    int min_len = 0;
 
     while(true){
         if(mode == 0){
@@ -266,12 +256,13 @@ std::string sha_256(std::ifstream &in, int mode){
             if(cnt % 2 != 0){
                 std::stringstream ss;
                 ss << sbuf_e[cnt - 1];
-                ss << 0x30;
+                ss << (char) 0x30;
 
                 ss >> std::hex >> tmp;
-                sbuf[(cnt - 1) / 2] = (char) tmp;
+                sbuf[(cnt - 1) / 2] = (char) (tmp | 0x08);
 
                 buffer.append(sbuf, (cnt + 1) / 2);
+                min_len = 4;
             }
             else{
                 buffer.append(sbuf, cnt / 2);
@@ -297,7 +288,9 @@ std::string sha_256(std::ifstream &in, int mode){
                 buffer.append(sbuf,  cnt / 8);
             }
             else{
+                sbuf[cnt / 8] |= ((0x01 << (7 - (cnt%8))));
                 buffer.append(sbuf, (cnt / 8) + 1);
+                min_len = 8 - (cnt % 8);
             }
         }
 
@@ -312,10 +305,10 @@ std::string sha_256(std::ifstream &in, int mode){
     }
 
     // Total number of hashed bits
-    uint64_t total_bits = (transforms*64 + buffer.size()) * 8;
+    uint64_t total_bits = ((transforms*64 + buffer.size()) * 8) - min_len;
 
     // Padding
-    buffer += (char) 0x80;
+    if(min_len == 0){ buffer += (char) 0x80; }
     size_t orig_size = buffer.size();
     while(buffer.size() < 64){
         buffer += (char) 0x00;
@@ -334,7 +327,6 @@ std::string sha_256(std::ifstream &in, int mode){
     // Append total_bits, split this uint64_t into two uint32_t
     block[14] = (uint32_t) (total_bits >> 32);
     block[15] = (uint32_t) total_bits;
-
     uint32_t s0, s1;
     for(size_t i = 16; i < 64; i++){
         s0 = sha256::b_rol(block[i-15], 7) ^ sha256::b_rol(block[i-15], 18) ^ (block[i-15] >> 3);
